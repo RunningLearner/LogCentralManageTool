@@ -1,0 +1,29 @@
+﻿<!-- MainWindow.xaml -->
+<Window x:Class="LogCentralManageTool.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="제품 관리" Height="600" Width="800">
+    <!-- DockPanel을 사용하여 좌측 드로어와 메인 컨텐츠 영역을 배치 -->
+    <DockPanel>
+        <!-- 좌측 드로어: 제품 리스트를 표시하는 영역 -->
+        <StackPanel DockPanel.Dock="Left" Width="200" Background="LightGray">
+            <!-- 드로어 제목 -->
+            <TextBlock Text="제품 리스트" FontWeight="Bold" FontSize="16" Margin="10"/>
+            <!-- 제품 리스트를 표시하는 ListBox -->
+            <ListBox Name="ProductListBox" Margin="10">
+                <ListBoxItem Content="제품 1"/>
+                <ListBoxItem Content="제품 2"/>
+                <ListBoxItem Content="제품 3"/>
+                <ListBoxItem Content="제품 4"/>
+            </ListBox>
+        </StackPanel>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <Grid Background="White">
+            <TextBlock Text="메인 컨텐츠 영역" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       FontSize="20"/>
+        </Grid>
+    </DockPanel>
+</Window>
