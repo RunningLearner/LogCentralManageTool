@@ -21,13 +21,11 @@
         </Grid.ColumnDefinitions>
 
         <!-- 분리된 사이드바 컨트롤을 사용 (재사용 가능한 UserControl) -->
-        <controls:SidebarControl Grid.Column="0" />
+        <controls:SidebarControl Grid.Column="0" DataContext="{Binding SidebarViewModel}" />
 
         <!-- 메인 컨텐츠 영역 -->
         <DockPanel Grid.Column="1">
             <!-- 사이드바 토글 버튼: 명령 바인딩 -->
-            <Button Content="사이드바 토글" Command="{Binding ToggleSidebarCommand}" 
-                    DockPanel.Dock="Top" Margin="10"/>
             <Grid Background="White">
                 <TextBlock Text="메인 컨텐츠 영역" 
                            HorizontalAlignment="Center" 

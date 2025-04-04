@@ -1,62 +1,43 @@
-﻿using LogCentralManageTool.Utils;
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Input;
 
 namespace LogCentralManageTool.ViewModels
 {
     /// <summary>
-    /// 메인 윈도우의 ViewModel: 사이드바 토글 기능 포함
+    /// 메인 윈도우의 전반적인 상태를 관리하는 ViewModel
     /// </summary>
     public class MainViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private bool _isSidebarVisible = true;
+        /// <summary>
+        /// 사이드바 전용 ViewModel을 포함
+        /// </summary>
+        public SidebarViewModel SidebarViewModel { get; } = new SidebarViewModel();
 
         /// <summary>
-        /// 사이드바의 표시 여부 (true: 보임, false: 숨김)
+        /// 사이드바 열의 너비: 확장 상태이면 200, 축소 상태이면 40
         /// </summary>
-        public bool IsSidebarVisible
+        public GridLength SidebarWidth => SidebarViewModel.IsExpanded ? new GridLength(200) : new GridLength(40);
+
+        /// <summary>
+        /// 생성자: SidebarViewModel의 변경 이벤트를 구독합니다.
+        /// </summary>
+        public MainViewModel()
         {
-            get => _isSidebarVisible;
-            set
+            // SidebarViewModel의 IsExpanded 값이 바뀔 때 SidebarWidth의 변경을 알림
+            SidebarViewModel.PropertyChanged += SidebarViewModel_PropertyChanged;
+        }
+
+        private void SidebarViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SidebarViewModel.IsExpanded))
             {
-                if (_isSidebarVisible != value)
-                {
-                    _isSidebarVisible = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(SidebarWidth));
-                }
+                OnPropertyChanged(nameof(SidebarWidth));
             }
         }
 
-        /// <summary>
-        /// 사이드바 열의 너비: 보이면 200, 숨기면 0
-        /// </summary>
-        public GridLength SidebarWidth => IsSidebarVisible ? new GridLength(200) : new GridLength(0);
-
-        private ICommand _toggleSidebarCommand;
-
-        /// <summary>
-        /// 사이드바를 토글하는 명령
-        /// </summary>
-        public ICommand ToggleSidebarCommand => _toggleSidebarCommand ??= new RelayCommand(o => ToggleSidebar());
-
-        /// <summary>
-        /// 사이드바 표시 상태를 토글합니다.
-        /// </summary>
-        private void ToggleSidebar()
-        {
-            IsSidebarVisible = !IsSidebarVisible;
-        }
-
-        /// <summary>
-        /// 속성 변경 알림 메서드
-        /// </summary>
-        /// <param name="propertyName">변경된 속성명</param>
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

@@ -4,16 +4,22 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:local="clr-namespace:LogCentralManageTool.Controls"
              >
-    <!-- 사이드바의 UI 구성 요소: 제품 리스트 표시 -->
-    <StackPanel Background="LightGray">
-        <!-- 드로어 제목 -->
-        <TextBlock Text="제품 리스트" FontWeight="Bold" FontSize="16" Margin="10"/>
-        <!-- 제품 리스트 ListBox -->
-        <ListBox Name="ProductListBox" Margin="10">
-            <ListBoxItem Content="제품 1"/>
-            <ListBoxItem Content="제품 2"/>
-            <ListBoxItem Content="제품 3"/>
-            <ListBoxItem Content="제품 4"/>
-        </ListBox>
-    </StackPanel>
+    <Grid Background="LightGray">
+        <StackPanel>
+            <!-- 사이드바 토글 버튼 -->
+            <Button Command="{Binding ToggleCommand}" 
+                    Width="30" Height="30" HorizontalAlignment="Right" Margin="5"
+                    Content="{Binding ToggleIcon}"/>
+            <!-- 사이드바 콘텐츠, 확장 상태일 때만 표시 -->
+            <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="제품 리스트" FontWeight="Bold" FontSize="16" Margin="10"/>
+                <ListBox Margin="10">
+                    <ListBoxItem Content="제품 1"/>
+                    <ListBoxItem Content="제품 2"/>
+                    <ListBoxItem Content="제품 3"/>
+                    <ListBoxItem Content="제품 4"/>
+                </ListBox>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </UserControl>
