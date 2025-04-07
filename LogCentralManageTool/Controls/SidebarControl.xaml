@@ -13,12 +13,16 @@
             <!-- 사이드바 콘텐츠, 확장 상태일 때만 표시 -->
             <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBlock Text="제품 리스트" FontWeight="Bold" FontSize="16" Margin="10"/>
-                <ListBox Margin="10">
-                    <ListBoxItem Content="제품 1"/>
-                    <ListBoxItem Content="제품 2"/>
-                    <ListBoxItem Content="제품 3"/>
-                    <ListBoxItem Content="제품 4"/>
+                <!-- 제품 리스트를 동적으로 바인딩 -->
+                <ListBox Margin="10" ItemsSource="{Binding ProductList}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                 </ListBox>
+                <!-- 제품 추가 버튼 -->
+                <Button Content="제품 추가" Command="{Binding AddProductCommand}" Margin="10"/>
             </StackPanel>
         </StackPanel>
     </Grid>
