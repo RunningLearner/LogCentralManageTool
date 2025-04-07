@@ -10,7 +10,7 @@ namespace LogCentralManageTool.Services;
 /// </summary>
 public static class ProductDataService
 {
-    private static readonly string FilePath = "products.json";
+    private static readonly string FilePath = Path.Combine("Config", "products.json");
 
     /// <summary>
     /// 로컬 JSON 파일에서 제품 정보를 읽어옵니다.
