@@ -11,7 +11,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="0.6*"/>
             <RowDefinition Height="0.4*"/>
         </Grid.RowDefinitions>
@@ -20,26 +19,22 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 제품명 입력 -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="제품명:" VerticalAlignment="Center" Margin="5"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Margin="5" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
-
         <!-- 데이터베이스 이름 입력 -->
-        <TextBlock Grid.Row="1" Grid.Column="0" Text="DB 이름:" VerticalAlignment="Center" Margin="5"/>
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5" Text="{Binding DatabaseName, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="DB 이름:" VerticalAlignment="Center" Margin="5"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Margin="5" Text="{Binding DatabaseName, UpdateSourceTrigger=PropertyChanged}"/>
 
+        <!-- ProviderType 선택 -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="제공자:" VerticalAlignment="Center" Margin="5"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="5"
+                  ItemsSource="{Binding ProviderTypes}"
+                  SelectedItem="{Binding SelectedProviderType}" />
+        
         <!-- 연결 문자열 입력 -->
         <TextBlock Grid.Row="2" Grid.Column="0" Text="연결 문자열:" VerticalAlignment="Center" Margin="5"/>
         <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- ProviderType 선택 -->
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="제공자:" VerticalAlignment="Center" Margin="5"/>
-        <ComboBox Grid.Row="3" Grid.Column="1" Margin="5"
-                  ItemsSource="{Binding ProviderTypes}"
-                  SelectedItem="{Binding SelectedProviderType}" />
-
         <!-- 버튼 영역: UniformGrid를 사용해 동적으로 너비를 균등 분배 -->
-        <UniformGrid Grid.Row="5" Grid.ColumnSpan="2" Columns="2" HorizontalAlignment="Stretch" Margin="5">
+        <UniformGrid Grid.Row="4" Grid.ColumnSpan="2" Columns="2" HorizontalAlignment="Stretch" Margin="5">
             <Button Content="취소" Margin="5" Click="Cancel_Click"/>
             <Button Content="추가" Margin="5" Click="Ok_Click"/>
         </UniformGrid>

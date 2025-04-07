@@ -29,7 +29,6 @@ public partial class AddProductWindow : Window
         {
             ProductInfo = new ProductInfo
             {
-                Name = vm.Name,
                 DatabaseName = vm.DatabaseName,
                 ConnectionString = vm.ConnectionString
                 // 필요하다면 ProviderType 정보를 ProductInfo에 포함할 수 있습니다.

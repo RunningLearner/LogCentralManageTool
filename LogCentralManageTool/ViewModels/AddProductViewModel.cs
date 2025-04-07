@@ -11,21 +11,11 @@ namespace LogCentralManageTool.ViewModels;
 /// </summary>
 public class AddProductViewModel : INotifyPropertyChanged
 {
-    private string _name;
     private string _databaseName;
     private string _connectionString;
     private ProviderType _selectedProviderType;
 
     public event PropertyChangedEventHandler PropertyChanged;
-
-    /// <summary>
-    /// 제품명 (기본값 "새 제품")
-    /// </summary>
-    public string Name
-    {
-        get => _name;
-        set { _name = value; OnPropertyChanged(); }
-    }
 
     /// <summary>
     /// 데이터베이스 이름 (기본값 "NewProductDb")
@@ -91,7 +81,6 @@ public class AddProductViewModel : INotifyPropertyChanged
 
     public AddProductViewModel()
     {
-        Name = "새 제품";
         DatabaseName = "NewProductDb";
         ConnectionString = "mongodb://localhost:27017/NewProductDb";
         ProviderTypes = new ObservableCollection<ProviderType>
