@@ -53,13 +53,13 @@ public static class DbContextFactory
                     .Options;
                 return new LoggingDbContext(mongoOptions);
 
-            // 필요시 추가
-            //case ProviderType.MySQL:
-            //    var mysqlOptions = new DbContextOptionsBuilder<LoggingDbContext>()
-            //        .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-            //        .Options;
-            //    return new LoggingDbContext(mysqlOptions);
+            case ProviderType.MySQL:
+                var mysqlOptions = new DbContextOptionsBuilder<LoggingDbContext>()
+                    .UseMySql(connectionString, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionString))
+                    .Options;
+                return new LoggingDbContext(mysqlOptions);
 
+            // 필요시 추가
             //case ProviderType.SQLite:
             //    var sqliteOptions = new DbContextOptionsBuilder<LoggingDbContext>()
             //        .UseSqlite(connectionString)

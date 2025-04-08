@@ -14,10 +14,12 @@
             <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBlock Text="제품 리스트" FontWeight="Bold" FontSize="16" Margin="10"/>
                 <!-- 제품 리스트를 동적으로 바인딩 -->
-                <ListBox Margin="10" ItemsSource="{Binding ProductList}">
+                <ListBox Margin="10" 
+                         ItemsSource="{Binding ProductList}" 
+                         SelectedItem="{Binding SelectedProduct, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding DatabaseName}"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

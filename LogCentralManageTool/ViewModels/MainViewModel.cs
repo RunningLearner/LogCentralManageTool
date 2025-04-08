@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using LogCentralManageTool.Data;
+using LogCentralManageTool.Models;
+
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
@@ -10,6 +13,13 @@ namespace LogCentralManageTool.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private object _currentContent;
+        public object CurrentContent
+        {
+            get => _currentContent;
+            set { _currentContent = value; OnPropertyChanged(); }
+        }
 
         /// <summary>
         /// 사이드바 전용 ViewModel을 포함
@@ -28,6 +38,7 @@ namespace LogCentralManageTool.ViewModels
         {
             // SidebarViewModel의 IsExpanded 값이 바뀔 때 SidebarWidth의 변경을 알림
             SidebarViewModel.PropertyChanged += SidebarViewModel_PropertyChanged;
+            SidebarViewModel.ProductSelected += OnProductSelected;
         }
 
         private void SidebarViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -36,6 +47,14 @@ namespace LogCentralManageTool.ViewModels
             {
                 OnPropertyChanged(nameof(SidebarWidth));
             }
+        }
+
+        private void OnProductSelected(ProductInfo product, ProviderType provider)
+        {
+            CurrentContent = new Views.DashBoardView
+            {
+                DataContext = new DashBoardViewModel(product, provider)
+            };
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

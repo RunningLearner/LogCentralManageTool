@@ -30,6 +30,7 @@
                 <TextBlock Text="메인 컨텐츠 영역" 
                            HorizontalAlignment="Center" 
                            VerticalAlignment="Center" FontSize="20"/>
+                <ContentControl Content="{Binding CurrentContent}" />
             </Grid>
         </DockPanel>
     </Grid>

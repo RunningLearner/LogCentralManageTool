@@ -46,6 +46,16 @@ public static class ProductDataService
         try
         {
             string json = JsonSerializer.Serialize(products, new JsonSerializerOptions { WriteIndented = true });
+
+            // FilePath에서 디렉터리 경로 추출
+            string directory = Path.GetDirectoryName(FilePath);
+
+            // directory가 null 또는 빈 문자열이 아닌 경우 바로 Directory.Exists 호출하여 존재 여부 확인
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             File.WriteAllText(FilePath, json);
         }
         catch (Exception ex)

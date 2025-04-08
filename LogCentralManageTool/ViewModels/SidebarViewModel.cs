@@ -1,4 +1,6 @@
-﻿using LogCentralManageTool.Models;
+﻿using LogCentralManageTool.Data;
+using LogCentralManageTool.Data.Entities;
+using LogCentralManageTool.Models;
 using LogCentralManageTool.Services;
 using LogCentralManageTool.Utils;
 using LogCentralManageTool.Views;
@@ -91,6 +93,53 @@ namespace LogCentralManageTool.ViewModels
                 ProductDataService.SaveProducts(new List<ProductInfo>(ProductList));
             }
         }
+
+        private ProductInfo _selectedProduct;
+
+        /// <summary>
+        /// 현재 선택된 제품. 변경 시 ProductSelected 이벤트 발생.
+        /// </summary>
+        public ProductInfo SelectedProduct
+        {
+            get => _selectedProduct;
+            set
+            {
+                if (_selectedProduct != value)
+                {
+                    _selectedProduct = value;
+                    OnPropertyChanged();
+
+                    // 선택된 제품이 null이 아닐 경우 이벤트 발생
+                    if (_selectedProduct != null)
+                    {
+                        // 기본 ProviderType 설정 (예: MySQL)
+                        ProductSelected?.Invoke(_selectedProduct, ProviderType.MySQL);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 제품 선택 이벤트 (MainViewModel에서 구독)
+        /// </summary>
+        public event Action<ProductInfo, ProviderType> ProductSelected;
+
+        private ICommand _selectProductCommand;
+
+        /// <summary>
+        /// 제품을 선택했을 때 실행되는 명령입니다.
+        /// </summary>
+        public ICommand SelectProductCommand => _selectProductCommand ??= new RelayCommand(o =>
+        {
+            if (o is ProductInfo product)
+            {
+                // 여기서 연결할 DB 종류 설정: 기본은 MySQL로 가정
+                var provider = ProviderType.MySQL;
+
+                // MainViewModel로 이벤트 전달
+                ProductSelected?.Invoke(product, provider);
+            }
+        });
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
