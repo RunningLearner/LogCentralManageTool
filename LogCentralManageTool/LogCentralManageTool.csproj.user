@@ -16,6 +16,9 @@
     <Compile Update="Views\DashBoardView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PieChartSummaryView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\SidebarControl.xaml">
@@ -28,6 +31,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PieChartSummaryView.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

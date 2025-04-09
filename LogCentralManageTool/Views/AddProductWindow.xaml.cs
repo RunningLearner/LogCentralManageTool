@@ -1,4 +1,5 @@
-﻿using LogCentralManageTool.Models;
+﻿using LogCentralManageTool.Data;
+using LogCentralManageTool.Models;
 using LogCentralManageTool.Services;
 using LogCentralManageTool.ViewModels;
 
@@ -31,8 +32,8 @@ public partial class AddProductWindow : Window
             ProductInfo = new ProductInfo
             {
                 DatabaseName = vm.DatabaseName,
-                ConnectionString = vm.ConnectionString
-                // 필요하다면 ProviderType 정보를 ProductInfo에 포함할 수 있습니다.
+                ConnectionString = vm.ConnectionString,
+                ProviderType = vm.SelectedProviderType
             };
             
             // 기존 목록에 추가하여 저장

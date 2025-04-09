@@ -25,6 +25,8 @@
                 </ListBox>
                 <!-- 제품 추가 버튼 -->
                 <Button Content="제품 추가" Command="{Binding AddProductCommand}" Margin="10"/>
+                <!-- 제품 삭제 버튼 -->
+                <Button Content="제품 삭제" Command="{Binding DeleteProductCommand}" Margin="10"/>
             </StackPanel>
         </StackPanel>
     </Grid>

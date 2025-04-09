@@ -24,6 +24,7 @@ public class MainViewModelTests
     /// 2. 이후 IsExpanded를 true로 변경하면 SidebarWidth가 200으로 업데이트되어야 합니다.
     /// </summary>
     [Test]
+    [Apartment(ApartmentState.STA)] // UI 구성 요소를 사용하므로 STA 스레드에서 실행
     public void SidebarWidth_ShouldReflectIsExpandedState()
     {
         // Arrange
@@ -48,6 +49,7 @@ public class MainViewModelTests
     /// 2. SidebarViewModel의 IsExpanded 값을 변경한 후 'SidebarWidth'가 포함된 이벤트가 발생하는지 확인합니다.
     /// </summary>
     [Test]
+    [Apartment(ApartmentState.STA)] // UI 구성 요소를 사용하므로 STA 스레드에서 실행
     public void PropertyChanged_Event_FiresForSidebarWidth_WhenIsExpandedChanges()
     {
         // Arrange
@@ -103,5 +105,34 @@ public class MainViewModelTests
         Assert.IsNotNull(dashBoardView, "CurrentContent는 DashBoardView 인스턴스여야 합니다.");
         Assert.IsNotNull(dashBoardView.DataContext, "DashBoardView의 DataContext는 null이 아니어야 합니다.");
         Assert.IsInstanceOf<DashBoardViewModel>(dashBoardView.DataContext, "DataContext는 DashBoardViewModel 타입이어야 합니다.");
+    }
+
+    /// <summary>
+    /// 테스트 목적:
+    /// HomeCommand 실행 시 MainViewModel의 ShowHome 메서드가 호출되어,
+    /// CurrentContent가 PieChartSummaryView 인스턴스로 업데이트되고, 그 DataContext가 PieChartSummaryViewModel 타입임을 검증합니다.
+    /// 
+    /// 시나리오:
+    /// 1. MainViewModel 인스턴스를 생성합니다.
+    /// 2. HomeCommand를 실행합니다.
+    /// 3. MainViewModel.CurrentContent가 PieChartSummaryView 인스턴스로 설정되고, 그 DataContext가 PieChartSummaryViewModel 타입임을 확인합니다.
+    /// </summary>
+    [Test]
+    [Apartment(ApartmentState.STA)]
+    public void HomeCommand_UpdatesCurrentContent_ToPieChartSummaryView()
+    {
+        // Arrange
+        var mainViewModel = new MainViewModel();
+
+        // Act: HomeCommand 실행
+        mainViewModel.HomeCommand.Execute(null);
+
+        // Assert
+        Assert.IsNotNull(mainViewModel.CurrentContent, "HomeCommand 실행 후, CurrentContent는 null이 아니어야 합니다.");
+
+        var homeView = mainViewModel.CurrentContent as PieChartSummaryView;
+        Assert.IsNotNull(homeView, "CurrentContent는 PieChartSummaryView 인스턴스여야 합니다.");
+        Assert.IsNotNull(homeView.DataContext, "PieChartSummaryView의 DataContext는 null이 아니어야 합니다.");
+        Assert.IsInstanceOf<PieChartSummaryViewModel>(homeView.DataContext, "DataContext는 PieChartSummaryViewModel 타입이어야 합니다.");
     }
 }

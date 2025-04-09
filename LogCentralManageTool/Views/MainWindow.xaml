@@ -11,27 +11,34 @@
         <vm:MainViewModel />
     </Window.DataContext>
 
-    <!-- MainGrid에 이름을 부여하여 ElementName 바인딩에 사용 -->
-    <Grid x:Name="MainGrid">
-        <Grid.ColumnDefinitions>
-            <!-- 첫 번째 열: 사이드바의 너비를 ViewModel의 SidebarWidth에 바인딩 -->
-            <ColumnDefinition Width="{Binding DataContext.SidebarWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <!-- 두 번째 열: 메인 컨텐츠 영역 -->
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <!-- 전체 레이아웃을 감싸는 최상위 Grid -->
+    <Grid x:Name="RootGrid">
+        <!-- 메인 레이아웃을 위한 내부 Grid -->
+        <Grid x:Name="MainLayoutGrid">
+            <Grid.ColumnDefinitions>
+                <!-- 첫 번째 열: 사이드바의 너비를 ViewModel의 SidebarWidth에 바인딩 -->
+                <ColumnDefinition Width="{Binding DataContext.SidebarWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
+                <!-- 두 번째 열: 메인 컨텐츠 영역 -->
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!-- 분리된 사이드바 컨트롤을 사용 (재사용 가능한 UserControl) -->
-        <controls:SidebarControl Grid.Column="0" DataContext="{Binding SidebarViewModel}" />
+            <!-- 사이드바 컨트롤 -->
+            <controls:SidebarControl Grid.Column="0" DataContext="{Binding SidebarViewModel}" />
 
-        <!-- 메인 컨텐츠 영역 -->
-        <DockPanel Grid.Column="1">
-            <!-- 사이드바 토글 버튼: 명령 바인딩 -->
-            <Grid Background="White">
-                <TextBlock Text="메인 컨텐츠 영역" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" FontSize="20"/>
+            <!-- 메인 컨텐츠 영역 -->
+            <DockPanel Grid.Column="1">
                 <ContentControl Content="{Binding CurrentContent}" />
-            </Grid>
-        </DockPanel>
+            </DockPanel>
+        </Grid>
+
+        <!-- 전체 영역에 걸쳐 우상단에 배치되는 홈버튼 -->
+        <Button Content="홈"
+                Command="{Binding HomeCommand}"
+                Width="80" Height="30"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,10,10,0"
+                Grid.ColumnSpan="2"   
+                Panel.ZIndex="1"/>
     </Grid>
 </Window>
