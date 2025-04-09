@@ -49,9 +49,9 @@ namespace LogCentralManageTool.ViewModels
             }
         }
 
-        private void OnProductSelected(ProductInfo product, ProviderType provider)
+        private void OnProductSelected(ProductInfo product)
         {
-            var context = DbContextFactory.GetContext(product.DatabaseName, provider, product.ConnectionString);
+            var context = DbContextFactory.GetContext(product.DatabaseName, product.ProviderType, product.ConnectionString);
             
             CurrentContent = new Views.DashBoardView
             {

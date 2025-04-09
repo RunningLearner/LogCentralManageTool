@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using MongoDB.Driver;
 
 namespace LogCentralManageTool.Data;
@@ -37,6 +36,10 @@ public static class DbContextFactory
                 case ProviderType.SQLite:
                     connectionString = "Data Source=" + databaseName + ".sqlite";
                     break;
+                case ProviderType.InMemory:
+                    // In-Memory DB의 경우 연결 문자열은 사용하지 않으며, 데이터베이스 이름을 식별자로 사용
+                    connectionString = databaseName;
+                    break;
             }
         }
 
@@ -58,6 +61,13 @@ public static class DbContextFactory
                     .UseMySql(connectionString, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionString))
                     .Options;
                 return new LoggingDbContext(mysqlOptions);
+
+            case ProviderType.InMemory:
+                // In-Memory 데이터베이스 사용: 테스트나 임시 데이터 저장에 유용합니다.
+                var inMemoryOptions = new DbContextOptionsBuilder<LoggingDbContext>()
+                    .UseInMemoryDatabase(connectionString)
+                    .Options;
+                return new LoggingDbContext(inMemoryOptions);
 
             // 필요시 추가
             //case ProviderType.SQLite:

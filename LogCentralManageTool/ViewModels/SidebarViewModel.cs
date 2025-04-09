@@ -122,7 +122,7 @@ namespace LogCentralManageTool.ViewModels
         /// <summary>
         /// 제품 선택 이벤트 (MainViewModel에서 구독)
         /// </summary>
-        public event Action<ProductInfo, ProviderType> ProductSelected;
+        public event Action<ProductInfo> ProductSelected;
 
         private ICommand _selectProductCommand;
 
@@ -133,11 +133,8 @@ namespace LogCentralManageTool.ViewModels
         {
             if (o is ProductInfo product)
             {
-                // 여기서 연결할 DB 종류 설정: 기본은 MySQL로 가정
-                var provider = ProviderType.MySQL;
-
                 // MainViewModel로 이벤트 전달
-                ProductSelected?.Invoke(product, provider);
+                ProductSelected?.Invoke(product);
             }
         });
 

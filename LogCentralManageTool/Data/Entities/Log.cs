@@ -36,6 +36,6 @@ public class Log
     /// 예외 발생 시의 스택트레이스 정보입니다.
     /// </summary>
     [Column(TypeName = "text")]
-    public string StackTrace { get; set; }
+    public string? StackTrace { get; set; }
     // 추가 컬럼이 필요한 경우 여기에 작성할 수 있습니다.
 }

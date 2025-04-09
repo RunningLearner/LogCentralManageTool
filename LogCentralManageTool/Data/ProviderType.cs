@@ -18,5 +18,11 @@ public enum ProviderType
     /// <summary>
     /// SQLite 제공자
     /// </summary>
-    SQLite
+    SQLite,
+
+    /// <summary>
+    /// InMemory 제공자
+    /// 테스트 또는 임시 데이터 저장에 사용
+    /// </summary>
+    InMemory
 }

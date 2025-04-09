@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LogCentralManageTool.Data;
 
 namespace LogCentralManageTool.Models;
 
@@ -18,4 +19,9 @@ public class ProductInfo
     /// 해당 제품의 연결 문자열입니다.
     /// </summary>
     public string ConnectionString { get; set; }
+
+    /// <summary>
+    /// 데이터베이스 제공자 종류
+    /// </summary>
+    public ProviderType ProviderType { get; set; }
 }
