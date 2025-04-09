@@ -4,6 +4,7 @@ using LogCentralManageTool.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -161,5 +162,41 @@ public class SidebarViewModelTests
         Assert.IsNotNull(eventProduct, "SelectedProduct가 null이 아니면 ProductSelected 이벤트가 발생해야 합니다.");
         Assert.AreEqual(selectedProduct, eventProduct, "ProductSelected 이벤트의 인자로 전달된 제품 정보가 올바르지 않습니다.");
         Assert.AreEqual(ProviderType.InMemory, eventProvider, "ProductSelected 이벤트의 기본 ProviderType은 InMemory이어야 합니다.");
+    }
+
+    /// <summary>
+    /// 테스트 목적:
+    /// DeleteProductCommand 실행 시, 현재 선택된 제품이 ProductList에서 삭제되고 SelectedProduct가 null로 초기화되는지 검증합니다.
+    /// 
+    /// 시나리오:
+    /// 1. ProductList에 여러 제품을 추가한 후, 특정 제품을 SelectedProduct로 설정합니다.
+    /// 2. DeleteProductCommand를 실행하면, 선택된 제품이 목록에서 제거되고, SelectedProduct는 null로 초기화되어야 합니다.
+    /// </summary>
+    [Test]
+    [Apartment(ApartmentState.STA)] // UI 요소 관련 커맨드 테스트는 STA 스레드에서 실행
+    public void DeleteProductCommand_DeletesSelectedProduct()
+    {
+        // Arrange
+        var viewModel = new SidebarViewModel();
+        // 테스트를 위해 ProductList를 직접 설정 (ProductDataService.LoadProducts() 대신)
+        viewModel.ProductList = new ObservableCollection<ProductInfo>
+        {
+            new ProductInfo { DatabaseName = "TestDB1", ConnectionString = "conn1" },
+            new ProductInfo { DatabaseName = "TestDB2", ConnectionString = "conn2" }
+        };
+
+        // SelectedProduct로 첫 번째 제품 선택
+        var selectedProduct = viewModel.ProductList.First();
+        viewModel.SelectedProduct = selectedProduct;
+
+        // Act
+        // DeleteProductCommand가 실행 가능함을 검증 (SelectedProduct가 존재하므로)
+        Assert.IsTrue(viewModel.DeleteProductCommand.CanExecute(null), "SelectedProduct가 존재하므로 DeleteProductCommand는 실행 가능해야 합니다.");
+        viewModel.DeleteProductCommand.Execute(null);
+
+        // Assert
+        // 삭제 후, ProductList에서 선택된 제품이 제거되고, SelectedProduct가 null이어야 합니다.
+        Assert.IsFalse(viewModel.ProductList.Contains(selectedProduct), "삭제 명령 실행 후, 선택된 제품은 ProductList에서 제거되어야 합니다.");
+        Assert.IsNull(viewModel.SelectedProduct, "삭제 명령 실행 후, SelectedProduct는 null이어야 합니다.");
     }
 }
