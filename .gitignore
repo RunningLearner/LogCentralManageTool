@@ -7,3 +7,5 @@
 /LogCentralManageTool/LogCentralManageTool/obj
 /LogCentralManageTool/obj
 /LogCentralManageTool/bin/Debug/net8.0-windows
+/LogCentralManageTool.Tests/obj
+/LogCentralManageTool.Tests/bin/Debug/net8.0-windows
