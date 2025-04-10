@@ -11,6 +11,7 @@ using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace LogCentralManageTool.ViewModels;
@@ -44,7 +45,7 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
         private set
         {
             _series = value;
-            OnPropertyChanged(nameof(Series));
+            OnPropertyChanged();
         }
     }
 
@@ -192,7 +193,7 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     /// 속성 변경 알림 메서드
     /// </summary>
     /// <param name="propertyName">변경된 속성명</param>
-    protected void OnPropertyChanged(string propertyName)
+    protected void OnPropertyChanged([CallerMemberName]string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
