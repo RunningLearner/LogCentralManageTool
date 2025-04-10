@@ -24,11 +24,11 @@ public class LogRepositoryTests
     public void GetLatestLog_ReturnsNull_WhenNoLogsExist()
     {
         // Arrange: 고유한 In-Memory 데이터베이스 이름 생성
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                           .UseInMemoryDatabase(databaseName: "NoLogsDB_" + Guid.NewGuid().ToString())
                           .Options;
 
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var repository = new LogRepository(context);
 
@@ -52,13 +52,13 @@ public class LogRepositoryTests
     public void GetLatestLog_ReturnsLog_WhenSingleLogExists()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                           .UseInMemoryDatabase(databaseName: "SingleLogDB_" + Guid.NewGuid().ToString())
                           .Options;
 
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            var log = new Log
+            var log = new LogMySQL
             {
                 Id = 1,
                 Timestamp = DateTime.Now,
@@ -92,15 +92,15 @@ public class LogRepositoryTests
     public void GetLatestLog_ReturnsLatestLog_WhenMultipleLogsExist()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                           .UseInMemoryDatabase(databaseName: "MultipleLogsDB_" + Guid.NewGuid().ToString())
                           .Options;
 
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            var log1 = new Log { Id = 1, Timestamp = new DateTime(2025, 1, 1), LogLevel = "Info", Message = "로그 1" };
-            var log2 = new Log { Id = 2, Timestamp = new DateTime(2025, 2, 1), LogLevel = "Warning", Message = "로그 2" };
-            var log3 = new Log { Id = 3, Timestamp = new DateTime(2025, 3, 1), LogLevel = "Error", Message = "로그 3" };
+            var log1 = new LogMySQL { Id = 1, Timestamp = new DateTime(2025, 1, 1), LogLevel = "Info", Message = "로그 1" };
+            var log2 = new LogMySQL { Id = 2, Timestamp = new DateTime(2025, 2, 1), LogLevel = "Warning", Message = "로그 2" };
+            var log3 = new LogMySQL { Id = 3, Timestamp = new DateTime(2025, 3, 1), LogLevel = "Error", Message = "로그 3" };
 
             context.Logs.AddRange(log1, log2, log3);
             context.SaveChanges();

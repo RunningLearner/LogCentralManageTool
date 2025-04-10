@@ -15,7 +15,7 @@ public class LogTests
     public void DefaultConstructor_ShouldInitializeProperties()
     {
         // Arrange & Act: 기본 생성자를 통해 Log 객체 생성
-        Log log = new Log();
+        LogMySQL log = new LogMySQL();
 
         // Assert: 각 속성이 기본값(정수는 0, DateTime은 default값, 문자열은 null)으로 초기화되었는지 확인합니다.
         Assert.AreEqual(0, log.Id, "기본 Id 값은 0이어야 합니다.");
@@ -39,7 +39,7 @@ public class LogTests
         string expectedStackTrace = "샘플 스택 트레이스";
 
         // Act: 속성 초기화를 통해 Log 객체 생성
-        Log log = new Log
+        LogMySQL log = new LogMySQL
         {
             Id = expectedId,
             Timestamp = expectedTimestamp,
@@ -63,7 +63,7 @@ public class LogTests
     public void ToString_ShouldReturnNonEmptyString()
     {
         // Arrange: 로그 데이터를 초기화하여 객체 생성
-        Log log = new Log
+        LogMySQL log = new LogMySQL
         {
             Id = 1,
             Timestamp = new DateTime(2025, 4, 9),
@@ -86,7 +86,7 @@ public class LogTests
     public void Equals_ShouldReturnTrueForSameReference()
     {
         // Arrange: 하나의 Log 객체를 생성한 후 동일 참조를 다른 변수에 할당
-        Log log = new Log
+        LogMySQL log = new LogMySQL
         {
             Id = 1,
             Timestamp = DateTime.Now,
@@ -94,7 +94,7 @@ public class LogTests
             Message = "경고 메시지",
             StackTrace = "스택 트레이스 정보"
         };
-        Log sameReference = log;
+        LogMySQL sameReference = log;
 
         // Act & Assert: 동일 객체이므로 Equals가 true를 반환해야 합니다.
         Assert.IsTrue(log.Equals(sameReference), "동일한 객체 참조에 대해 Equals는 true여야 합니다.");
@@ -108,7 +108,7 @@ public class LogTests
     {
         // Arrange: 동일한 값들을 설정한 두 개의 Log 인스턴스 생성 (기본 Equals는 참조 비교)
         DateTime commonTimestamp = DateTime.Now;
-        Log log1 = new Log
+        LogMySQL log1 = new LogMySQL
         {
             Id = 1,
             Timestamp = commonTimestamp,
@@ -116,7 +116,7 @@ public class LogTests
             Message = "동일 메시지",
             StackTrace = "동일 스택트레이스"
         };
-        Log log2 = new Log
+        LogMySQL log2 = new LogMySQL
         {
             Id = 1,
             Timestamp = commonTimestamp,
@@ -136,7 +136,7 @@ public class LogTests
     public void GetHashCode_ShouldReturnInteger()
     {
         // Arrange: Log 객체 생성
-        Log log = new Log();
+        LogMySQL log = new LogMySQL();
 
         // Act: GetHashCode 메서드 호출
         int hashCode = log.GetHashCode();

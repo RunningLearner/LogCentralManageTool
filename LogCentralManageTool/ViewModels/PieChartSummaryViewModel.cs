@@ -143,7 +143,7 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
                 var context = DbContextFactory.GetContext(product.DatabaseName, product.ProviderType, product.ConnectionString);
 
                 // Log 엔티티 테이블의 로그 데이터를 조회
-                var logs = context.Set<Log>().ToList();
+                var logs = context.Logs.ToList();
 
                 // 로그 레벨별로 그룹핑하여 집계
                 var groups = logs.GroupBy(log => log.LogLevel)

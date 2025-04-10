@@ -4,16 +4,16 @@ namespace LogCentralManageTool.Data
 {
     public class LogRepository
     {
-        private readonly LoggingDbContext _context;
+        private readonly MySQLLoggingDbContext _context;
 
-        public LogRepository(LoggingDbContext context)
+        public LogRepository(MySQLLoggingDbContext context)
         {
             _context = context;
         }
 
-        public Log GetLatestLog()
+        public LogMySQL GetLatestLog()
         {
-            return _context.Set<Log>()
+            return _context.Set<LogMySQL>()
                            .OrderByDescending(l => l.Timestamp)
                            .FirstOrDefault();
         }

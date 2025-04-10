@@ -50,22 +50,22 @@ public class PieChartSummaryViewModelTests
     /// <param name="count">추가할 로그 건수</param>
     private void SeedInMemoryDatabase(string dbName, string logLevel, int count)
     {
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
             .UseInMemoryDatabase(databaseName: dbName)
             .Options;
 
         // 기존 데이터 삭제 처리: EnsureDeleted 호출
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             context.Database.EnsureDeleted();
         }
 
         // 새 컨텍스트 생성하여 시드 데이터 추가
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             for (int i = 0; i < count; i++)
             {
-                context.Set<Log>().Add(new Log
+                context.Set<LogMySQL>().Add(new LogMySQL
                 {
                     Id = i + 1,
                     Timestamp = DateTime.Now.AddMinutes(-i),

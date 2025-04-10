@@ -23,11 +23,11 @@ public class LoggingDbContextTests
     public void InsertLog_ShouldAddLogToDatabase()
     {
         // Arrange: In-Memory 데이터베이스 옵션 생성 (데이터베이스 이름을 고유하게 지정)
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                       .UseInMemoryDatabase(databaseName: "InsertLogTestDB")
                       .Options;
 
-        var newLog = new Log
+        var newLog = new LogMySQL
         {
             Id = 1,
             Timestamp = DateTime.Now,
@@ -37,14 +37,14 @@ public class LoggingDbContextTests
         };
 
         // Act: 로그 항목 삽입 후 저장
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             context.Logs.Add(newLog);
             context.SaveChanges();
         }
 
         // Assert: 새로운 컨텍스트를 사용하여 삽입된 로그 항목을 조회 및 검증
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var log = context.Logs.Find(1);
             Assert.IsNotNull(log, "삽입된 로그 항목을 데이터베이스에서 찾아야 합니다.");
@@ -64,14 +64,14 @@ public class LoggingDbContextTests
     public void QueryLog_ShouldRetrieveCorrectLogEntry()
     {
         // Arrange: In-Memory 데이터베이스 옵션 생성
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                       .UseInMemoryDatabase(databaseName: "QueryLogTestDB")
                       .Options;
 
         // 미리 로그 항목 삽입
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            context.Logs.Add(new Log
+            context.Logs.Add(new LogMySQL
             {
                 Id = 1,
                 Timestamp = DateTime.Now,
@@ -83,7 +83,7 @@ public class LoggingDbContextTests
         }
 
         // Act & Assert: LINQ 쿼리를 통해 로그 항목 조회 후 결과 검증
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var logEntry = context.Logs.FirstOrDefault(l => l.LogLevel == "Error");
             Assert.IsNotNull(logEntry, "쿼리 결과, 로그 항목을 찾아야 합니다.");
@@ -103,14 +103,14 @@ public class LoggingDbContextTests
     public void UpdateLog_ShouldModifyLogEntry()
     {
         // Arrange: In-Memory 데이터베이스 옵션 생성
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                       .UseInMemoryDatabase(databaseName: "UpdateLogTestDB")
                       .Options;
 
         // 초기 로그 항목 삽입
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            context.Logs.Add(new Log
+            context.Logs.Add(new LogMySQL
             {
                 Id = 1,
                 Timestamp = DateTime.Now,
@@ -122,7 +122,7 @@ public class LoggingDbContextTests
         }
 
         // Act: 로그 항목 수정 및 저장
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var logEntry = context.Logs.Find(1);
             Assert.IsNotNull(logEntry, "업데이트할 로그 항목이 존재해야 합니다.");
@@ -131,7 +131,7 @@ public class LoggingDbContextTests
         }
 
         // Assert: 수정된 로그 항목 조회 및 검증
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var logEntry = context.Logs.Find(1);
             Assert.AreEqual("Updated Message", logEntry.Message, "업데이트된 로그 메시지가 데이터베이스에 반영되어야 합니다.");
@@ -150,14 +150,14 @@ public class LoggingDbContextTests
     public void DeleteLog_ShouldRemoveLogEntry()
     {
         // Arrange: In-Memory 데이터베이스 옵션 생성
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                       .UseInMemoryDatabase(databaseName: "DeleteLogTestDB")
                       .Options;
 
         // 테스트용 로그 항목 삽입
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            context.Logs.Add(new Log
+            context.Logs.Add(new LogMySQL
             {
                 Id = 1,
                 Timestamp = DateTime.Now,
@@ -169,7 +169,7 @@ public class LoggingDbContextTests
         }
 
         // Act: 로그 항목 삭제 처리
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var logEntry = context.Logs.Find(1);
             context.Logs.Remove(logEntry);
@@ -177,7 +177,7 @@ public class LoggingDbContextTests
         }
 
         // Assert: 삭제된 로그 항목이 데이터베이스에 존재하지 않는지 확인
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             var logEntry = context.Logs.Find(1);
             Assert.IsNull(logEntry, "삭제된 로그 항목은 데이터베이스에 존재해서는 안 됩니다.");

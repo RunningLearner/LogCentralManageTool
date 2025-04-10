@@ -4,11 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace LogCentralManageTool.Data.Entities;
 
 /// <summary>
-/// 로그 데이터를 저장하는 엔티티입니다.
-/// 이 엔티티는 데이터베이스에서 "Log" 테이블로 매핑됩니다.
+/// MySQL용 로그 엔티티입니다.
 /// </summary>
 [Table("Log")]
-public class Log
+public class LogMySQL : ILog
 {
     /// <summary>
     /// 로그의 고유 식별자입니다.
@@ -37,5 +36,4 @@ public class Log
     /// </summary>
     [Column(TypeName = "text")]
     public string? StackTrace { get; set; }
-    // 추가 컬럼이 필요한 경우 여기에 작성할 수 있습니다.
 }

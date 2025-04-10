@@ -7,6 +7,8 @@ using LogCentralManageTool.Data;
 using LogCentralManageTool.Data.Entities;
 using LogCentralManageTool.Utils;
 
+using Microsoft.EntityFrameworkCore;
+
 using SkiaSharp;
 
 using System.Collections.ObjectModel;
@@ -31,14 +33,14 @@ public class DashBoardViewModel : INotifyPropertyChanged
 
     #region 필드
     // 외부에서 주입받은 LoggingDbContext 인스턴스를 저장하는 필드.
-    private readonly LoggingDbContext _context;
+    private readonly ILoggingDbContext _context;
     #endregion
 
     #region 속성
     /// <summary>
     /// 대시보드에 표시할 최신 로그 데이터.
     /// </summary>
-    public Log SelectedLog { get; set; }
+    public ILog SelectedLog { get; set; }
 
     /// <summary>
     /// 로그 데이터를 로그 레벨별로 그룹핑하여 생성한 차트의 시리즈 (Bar 형태)입니다.
@@ -92,18 +94,16 @@ public class DashBoardViewModel : INotifyPropertyChanged
     /// <param name="context">
     /// 제품 정보(데이터베이스명, 연결 문자열 등)에 맞게 이미 구성된 LoggingDbContext 인스턴스
     /// </param>
-    public DashBoardViewModel(LoggingDbContext context)
+    public DashBoardViewModel(ILoggingDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         try
         {
-            // 최신 로그 데이터를 SelectedLog에 할당
-            SelectedLog = _context.Set<Log>()
-                                  .OrderByDescending(l => l.Timestamp)
-                                  .FirstOrDefault();
-
             // 전체 로그 데이터를 가져옵니다.
-            var logs = _context.Set<Log>().ToList();
+            var logs = _context.Logs.ToList();
+
+            // 최신 로그 데이터를 SelectedLog에 할당
+            SelectedLog = logs.OrderByDescending(l => l.Timestamp).FirstOrDefault();
 
             // 모든 날짜(하루 단위) 목록과 로그 레벨 목록을 추출합니다.
             var distinctDates = logs.Select(l => l.Timestamp.Date)

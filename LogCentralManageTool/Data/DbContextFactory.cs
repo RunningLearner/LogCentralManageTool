@@ -18,7 +18,7 @@ public static class DbContextFactory
     /// 연결 문자열. null 또는 빈 문자열일 경우 기본 연결 문자열이 사용됩니다.
     /// </param>
     /// <returns>구성된 LoggingDbContext 인스턴스</returns>
-    public static LoggingDbContext GetContext(string databaseName, ProviderType providerType, string connectionString = null)
+    public static ILoggingDbContext GetContext(string databaseName, ProviderType providerType, string connectionString = null)
     {
         // 제공자에 따라 옵션 설정
         switch (providerType)
@@ -28,23 +28,23 @@ public static class DbContextFactory
                 var mongoClient = new MongoClient(connectionString);
                 var mongoDatabase = mongoClient.GetDatabase(databaseName);
 
-                var mongoOptions = new DbContextOptionsBuilder<LoggingDbContext>()
-                    .UseMongoDB(mongoDatabase.Client, mongoDatabase.DatabaseNamespace.DatabaseName)
+                var mongoOptions = new DbContextOptionsBuilder<MongoLoggingDbContext>()
+                    .UseMongoDB(mongoClient, databaseName)
                     .Options;
-                return new LoggingDbContext(mongoOptions);
+                return new MongoLoggingDbContext(mongoOptions);
 
             case ProviderType.MySQL:
-                var mysqlOptions = new DbContextOptionsBuilder<LoggingDbContext>()
+                var mysqlOptions = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                     .UseMySql(connectionString, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionString))
                     .Options;
-                return new LoggingDbContext(mysqlOptions);
+                return new MySQLLoggingDbContext(mysqlOptions);
 
             case ProviderType.InMemory:
                 // In-Memory 데이터베이스 사용: 테스트나 임시 데이터 저장에 유용합니다.
-                var inMemoryOptions = new DbContextOptionsBuilder<LoggingDbContext>()
+                var inMemoryOptions = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
                     .UseInMemoryDatabase(connectionString)
                     .Options;
-                return new LoggingDbContext(inMemoryOptions);
+                return new MySQLLoggingDbContext(inMemoryOptions);
 
             // 필요시 추가
             //case ProviderType.SQLite:

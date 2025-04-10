@@ -20,14 +20,14 @@ public class DashBoardViewModelTests
     public void Constructor_AssignsLatestLog_WhenLogsExist()
     {
         // Arrange: 고유한 인메모리 데이터베이스 이름 사용
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDB_" + Guid.NewGuid().ToString())
             .Options;
 
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             // 두 개 이상의 로그 엔티티 추가 (log2가 더 최신)
-            var log1 = new Log
+            var log1 = new LogMySQL
             {
                 Id = 1,
                 Timestamp = new DateTime(2025, 1, 1),
@@ -35,7 +35,7 @@ public class DashBoardViewModelTests
                 LogLevel = "Info",
                 StackTrace = "No StackTrace"
             };
-            var log2 = new Log
+            var log2 = new LogMySQL
             {
                 Id = 2,
                 Timestamp = new DateTime(2025, 2, 1),
@@ -43,7 +43,7 @@ public class DashBoardViewModelTests
                 LogLevel = "Info",
                 StackTrace = "No StackTrace"
             };
-            context.Set<Log>().AddRange(log1, log2);
+            context.Set<LogMySQL>().AddRange(log1, log2);
             context.SaveChanges();
 
             // Act: DashBoardViewModel 생성
@@ -62,10 +62,10 @@ public class DashBoardViewModelTests
     public void Constructor_SetsSelectedLogToNull_WhenNoLogsExist()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
             .UseInMemoryDatabase(databaseName: "EmptyDB_" + Guid.NewGuid().ToString())
             .Options;
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
             context.SaveChanges();
 
@@ -95,15 +95,15 @@ public class DashBoardViewModelTests
     public void ToggleSeriesCommand_TogglesVisibility_ForGivenLevel()
     {
         // Arrange: 인메모리 데이터베이스에 여러 로그 데이터를 추가 (로그 레벨: Info, Warning, Error)
-        var options = new DbContextOptionsBuilder<LoggingDbContext>()
+        var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
             .UseInMemoryDatabase(databaseName: "ToggleDB_" + Guid.NewGuid().ToString())
             .Options;
-        using (var context = new LoggingDbContext(options))
+        using (var context = new MySQLLoggingDbContext(options))
         {
-            var logInfo = new Log { Id = 1, Timestamp = new DateTime(2025, 1, 1), Message = "Info Log", LogLevel = "Info", StackTrace = "" };
-            var logWarning = new Log { Id = 2, Timestamp = new DateTime(2025, 1, 1), Message = "Warning Log", LogLevel = "Warning", StackTrace = "" };
-            var logError = new Log { Id = 3, Timestamp = new DateTime(2025, 1, 1), Message = "Error Log", LogLevel = "Error", StackTrace = "" };
-            context.Set<Log>().AddRange(logInfo, logWarning, logError);
+            var logInfo = new LogMySQL { Id = 1, Timestamp = new DateTime(2025, 1, 1), Message = "Info Log", LogLevel = "Info", StackTrace = "" };
+            var logWarning = new LogMySQL { Id = 2, Timestamp = new DateTime(2025, 1, 1), Message = "Warning Log", LogLevel = "Warning", StackTrace = "" };
+            var logError = new LogMySQL { Id = 3, Timestamp = new DateTime(2025, 1, 1), Message = "Error Log", LogLevel = "Error", StackTrace = "" };
+            context.Set<LogMySQL>().AddRange(logInfo, logWarning, logError);
             context.SaveChanges();
 
             var viewModel = new DashBoardViewModel(context);
