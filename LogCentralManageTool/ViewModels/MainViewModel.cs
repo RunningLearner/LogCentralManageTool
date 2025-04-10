@@ -95,16 +95,16 @@ namespace LogCentralManageTool.ViewModels
         }
 
         /// <summary>
-        /// 제품 선택 이벤트 처리: 선택한 제품의 DbContext를 생성하여 DashboardView를 표시
+        /// 제품 선택 이벤트 처리: 선택한 제품의 LogRepository를 생성하여 DashboardView를 표시
         /// </summary>
         /// <param name="product">선택된 제품 정보</param>
         private void OnProductSelected(ProductInfo product)
         {
-            var context = DbContextFactory.GetContext(product.DatabaseName, product.ProviderType, product.ConnectionString);
+            var logRepository = LogRepositoryFactory.GetRepository(product.DatabaseName, product.ProviderType, product.ConnectionString);
 
             CurrentContent = new DashBoardView
             {
-                DataContext = new DashBoardViewModel(context)
+                DataContext = new DashBoardViewModel(logRepository)
             };
         }
 

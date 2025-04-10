@@ -8,20 +8,16 @@ namespace LogCentralManageTool.Data;
 /// <summary>
 /// EF Core Provider for MongoDB를 사용하는 로그 전용 DbContext 클래스입니다.
 /// </summary>
-public class MongoLoggingDbContext : DbContext, ILoggingDbContext
+public class MongoLoggingDbContext : DbContext
 {
-    public DbSet<LogMongo> MongoLogs { get; set; }
-
-    // ILoggingDbContext 인터페이스 구현:
-    // 필요에 따라 변환하거나 공통 인터페이스(Log)를 사용하도록 합니다.
-    public IQueryable<ILog> Logs => MongoLogs;
+    public DbSet<LogMongo> Logs { get; set; }
 
     /// <summary>
     /// DbContextOptions를 받는 생성자입니다.
     /// </summary>
     /// <param name="options">DbContext 옵션</param>
     public MongoLoggingDbContext(DbContextOptions<MongoLoggingDbContext> options)
-        : base(options)
+            : base(options)
     {
     }
 

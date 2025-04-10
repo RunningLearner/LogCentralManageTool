@@ -32,8 +32,8 @@ public class DashBoardViewModel : INotifyPropertyChanged
     #endregion
 
     #region 필드
-    // 외부에서 주입받은 LoggingDbContext 인스턴스를 저장하는 필드.
-    private readonly ILoggingDbContext _context;
+    // 외부에서 주입받은 ILogRepository 인스턴스를 저장하는 필드.
+    private readonly ILogRepository _logRepositoty;
     #endregion
 
     #region 속성
@@ -89,18 +89,18 @@ public class DashBoardViewModel : INotifyPropertyChanged
 
     #region 생성자
     /// <summary>
-    /// 생성자: 외부에서 주입받은 LoggingDbContext를 사용하여 최신 로그를 SelectedLog에 할당합니다.
+    /// 생성자: 외부에서 주입받은 LogRepository 사용하여 최신 로그를 SelectedLog에 할당합니다.
     /// </summary>
-    /// <param name="context">
-    /// 제품 정보(데이터베이스명, 연결 문자열 등)에 맞게 이미 구성된 LoggingDbContext 인스턴스
+    /// <param name="logRepository">
+    /// 제품 정보(데이터베이스명, 연결 문자열 등)에 맞게 이미 구성된 ILogRepository 인스턴스
     /// </param>
-    public DashBoardViewModel(ILoggingDbContext context)
+    public DashBoardViewModel(ILogRepository logRepository)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logRepositoty = logRepository ?? throw new ArgumentNullException(nameof(logRepository));
         try
         {
             // 전체 로그 데이터를 가져옵니다.
-            var logs = _context.Logs.ToList();
+            var logs = _logRepositoty.GetAllLogs();
 
             // 최신 로그 데이터를 SelectedLog에 할당
             SelectedLog = logs.OrderByDescending(l => l.Timestamp).FirstOrDefault();

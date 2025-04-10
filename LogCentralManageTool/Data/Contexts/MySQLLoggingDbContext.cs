@@ -7,14 +7,9 @@ namespace LogCentralManageTool.Data;
 /// <summary>
 /// EF Core를 위한 MySQL 전용 로그 DbContext 클래스입니다.
 /// </summary>
-public class MySQLLoggingDbContext : DbContext, ILoggingDbContext
+public class MySQLLoggingDbContext : DbContext
 {
-    public DbSet<LogMySQL> MySQLLogs { get; set; }
-
-    // ILoggingDbContext 인터페이스 구현:
-    // 여기서 변환 작업 등을 통해 ILog 타입(또는 공통 Log 타입)으로 노출할 수 있습니다.
-    // 예시로 단순히 DbSet을 IQueryable<Log>로 캐스팅한다면:
-    public IQueryable<ILog> Logs => MySQLLogs;
+    public DbSet<LogMySQL> Logs { get; set; }
 
     /// <summary>
     /// DbContextOptions를 받는 생성자입니다.
