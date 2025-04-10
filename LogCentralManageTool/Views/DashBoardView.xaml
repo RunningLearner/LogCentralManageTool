@@ -5,10 +5,43 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LogCentralManageTool.Views"
              xmlns:vm="clr-namespace:LogCentralManageTool.ViewModels"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:conv="clr-namespace:LogCentralManageTool.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <!-- BoolToColorConverter 인스턴스를 리소스로 등록 -->
+        <conv:BoolToColorConverter x:Key="BoolToColorConverter" TrueBrush="SkyBlue" FalseBrush="LightGray" />
+    </UserControl.Resources>
     <Grid Background="White" Margin="20">
-        <StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 로그 레벨 토글 버튼 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Info" 
+                    Command="{Binding ToggleSeriesCommand}" 
+                    CommandParameter="Info" Margin="4"
+                    Background="{Binding IsInfoVisible, Converter={StaticResource BoolToColorConverter}}"/>
+            <Button Content="Warning" 
+                    Command="{Binding ToggleSeriesCommand}" 
+                    CommandParameter="Warning" Margin="4"
+                    Background="{Binding IsWarningVisible, Converter={StaticResource BoolToColorConverter}}"/>
+            <Button Content="Error" 
+                    Command="{Binding ToggleSeriesCommand}" 
+                    CommandParameter="Error" Margin="4"
+                    Background="{Binding IsErrorVisible, Converter={StaticResource BoolToColorConverter}}"/>
+        </StackPanel>
+
+        <!-- 차트 영역 -->
+        <lvc:CartesianChart Grid.Row="1" Series="{Binding Series}" XAxes="{Binding XAxes}"
+                            ZoomMode="X"/>
+
+        <!-- 로그 상세 정보 영역 -->
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
             <TextBlock Text="{Binding SelectedLog.Timestamp}" FontWeight="Bold" FontSize="14" />
             <TextBlock Text="{Binding SelectedLog.LogLevel}" />
             <TextBlock Text="{Binding SelectedLog.Message}" TextWrapping="Wrap"/>
