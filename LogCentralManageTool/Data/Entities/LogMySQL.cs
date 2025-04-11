@@ -13,7 +13,7 @@ public class LogMySQL : ILog
     /// 로그의 고유 식별자입니다.
     /// </summary>
     [Key]
-    public int Id { get; set; }
+    public string Id { get; set; }
 
     /// <summary>
     /// 로그가 기록된 시간입니다.

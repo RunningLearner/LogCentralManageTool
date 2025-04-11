@@ -67,7 +67,7 @@ public class PieChartSummaryViewModelTests
             {
                 context.Set<LogMySQL>().Add(new LogMySQL
                 {
-                    Id = i + 1,
+                    Id = (i + 1).ToString(),
                     Timestamp = DateTime.Now.AddMinutes(-i),
                     Message = $"{logLevel} log {i + 1}",
                     LogLevel = logLevel,

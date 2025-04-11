@@ -1,6 +1,7 @@
 ﻿using LogCentralManageTool.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LogCentralManageTool.Data;
 
@@ -22,7 +23,31 @@ public class MySQLLoggingDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // 문자열을 정수로 변환하는 ValueConverter 생성
+        var idConverter = new ValueConverter<string, int>(
+            v => ConvertStringToInt(v),
+            v => v.ToString());
+
+        modelBuilder.Entity<LogMySQL>(entity =>
+        {
+            // Id 속성에 ValueConverter 적용
+            entity.Property(e => e.Id)
+                .HasConversion(idConverter)
+                .ValueGeneratedOnAdd() // 자동 증가 키인 경우
+                .HasColumnType("int"); // DB 컬럼은 int 타입으로 설정
+        });
+
         base.OnModelCreating(modelBuilder);
-        // MySQL 환경에 필요한 추가 Fluent API 매핑이 있다면 여기서 지정
+    }
+
+    /// <summary>
+    /// 문자열을 정수로 변환하는 메서드입니다.
+    /// 변환에 실패하면 기본값인 0을 반환합니다.
+    /// </summary>
+    /// <param name="v">변환할 문자열</param>
+    /// <returns>변환된 정수 값</returns>
+    private static int ConvertStringToInt(string v)
+    {
+        return int.TryParse(v, out int intValue) ? intValue : 0;
     }
 }

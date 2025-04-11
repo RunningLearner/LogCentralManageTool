@@ -30,7 +30,7 @@ public class DashBoardViewModelTests
             // 두 개 이상의 로그 엔티티 추가 (log2가 더 최신)
             var log1 = new LogMySQL
             {
-                Id = 1,
+                Id = "1",
                 Timestamp = new DateTime(2025, 1, 1),
                 Message = "Old Log",
                 LogLevel = "Info",
@@ -38,7 +38,7 @@ public class DashBoardViewModelTests
             };
             var log2 = new LogMySQL
             {
-                Id = 2,
+                Id = "2",
                 Timestamp = new DateTime(2025, 2, 1),
                 Message = "Latest Log",
                 LogLevel = "Info",
@@ -59,7 +59,7 @@ public class DashBoardViewModelTests
             // ILog 인터페이스를 구현한 객체이므로 LogMySQL로 캐스팅합니다.
             var selected = viewModel.SelectedLog as LogMySQL;
             Assert.IsNotNull(selected, "SelectedLog는 LogMySQL 타입이어야 합니다.");
-            Assert.AreEqual(2, selected.Id, "SelectedLog에는 가장 최신의 로그(log2)가 할당되어야 합니다.");
+            Assert.AreEqual("2", selected.Id, "SelectedLog에는 가장 최신의 로그(log2)가 할당되어야 합니다.");
         }
     }
 
@@ -111,7 +111,7 @@ public class DashBoardViewModelTests
         {
             var logInfo = new LogMySQL
             {
-                Id = 1,
+                Id = "1",
                 Timestamp = new DateTime(2025, 1, 1),
                 Message = "Info Log",
                 LogLevel = "Info",
@@ -119,7 +119,7 @@ public class DashBoardViewModelTests
             };
             var logWarning = new LogMySQL
             {
-                Id = 2,
+                Id = "2",
                 Timestamp = new DateTime(2025, 1, 1),
                 Message = "Warning Log",
                 LogLevel = "Warning",
@@ -127,7 +127,7 @@ public class DashBoardViewModelTests
             };
             var logError = new LogMySQL
             {
-                Id = 3,
+                Id = "3",
                 Timestamp = new DateTime(2025, 1, 1),
                 Message = "Error Log",
                 LogLevel = "Error",

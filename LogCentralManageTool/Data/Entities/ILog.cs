@@ -4,6 +4,7 @@
 /// </summary>
 public interface ILog
 {
+    string Id { get; set; }
     DateTime Timestamp { get; set; }
     string LogLevel { get; set; }
     string Message { get; set; }
