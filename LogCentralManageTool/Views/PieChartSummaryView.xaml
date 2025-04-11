@@ -7,11 +7,32 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <!-- 파이 차트 컨트롤: ViewModel의 Series 속성을 바인딩하여 로그 레벨별 집계 데이터를 시각화 -->
-        <lvc:PieChart Series="{Binding Series}"
-                      IsClockwise="False"
-                      InitialRotation="-90"
-                      LegendPosition="Right" /> 
-    </Grid>
+    <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Charts}">
+            <!-- ItemsPanelTemplate을 WrapPanel로 변경 -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Padding="5">
+                        <StackPanel>
+                            <TextBlock Text="{Binding DatabaseName}" 
+                                       FontWeight="Bold" 
+                                       FontSize="16" 
+                                       Margin="0,0,0,5" />
+                            <lvc:PieChart Series="{Binding Series}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Width="500" Height="500"
+                                          IsClockwise="False"
+                                          InitialRotation="-90"
+                                          LegendPosition="Right"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
 </UserControl>

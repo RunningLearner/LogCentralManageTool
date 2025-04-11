@@ -30,21 +30,21 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     #region 필드
 
     private ObservableCollection<ProductInfo> _productInfos;
-    private IEnumerable<ISeries> _series;
+    private ObservableCollection<ProductPieChartViewModel> _charts;
 
     #endregion
 
     #region 속성
 
     /// <summary>
-    /// LiveChartsCore의 ISeries 컬렉션으로 구성된 파이 차트 시리즈입니다.
+    /// 각 제품별 파이 차트 정보를 담고 있는 ObservableCollection입니다.
     /// </summary>
-    public IEnumerable<ISeries> Series
+    public ObservableCollection<ProductPieChartViewModel> Charts
     {
-        get => _series;
+        get => _charts;
         private set
         {
-            _series = value;
+            _charts = value;
             OnPropertyChanged();
         }
     }
@@ -54,16 +54,15 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     #region 생성자
 
     /// <summary>
-    /// ObservableCollection&lt;ProductInfo&gt;를 받아 각 제품의 로그 데이터를 집계한 후, 파이 차트 시리즈를 생성합니다.
+    /// ObservableCollection&lt;ProductInfo&gt;를 받아 각 제품의 로그 데이터를 집계한 후, 제품별 파이 차트 시리즈를 생성합니다.
     /// </summary>
     /// <param name="productInfos">제품 정보 컬렉션</param>
     public PieChartSummaryViewModel(ObservableCollection<ProductInfo> productInfos)
     {
         _productInfos = productInfos;
-        // ObservableCollection의 변화(추가, 삭제 등)를 감지
         _productInfos.CollectionChanged += ProductInfos_CollectionChanged;
 
-        // 기존 항목들의 개별 변경도 감지 (ProductInfo가 INotifyPropertyChanged를 구현하는 경우)
+        // 기존 항목들의 개별 변경 감지 (ProductInfo가 INotifyPropertyChanged를 구현한 경우)
         foreach (var product in _productInfos)
         {
             if (product is INotifyPropertyChanged inpc)
@@ -73,7 +72,7 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
         }
 
         // 최초 집계 수행
-        UpdateSeries();
+        UpdateCharts();
     }
 
     #endregion
@@ -109,8 +108,8 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
             }
         }
 
-        // 컬렉션 변화가 있을 때마다 시리즈를 업데이트
-        UpdateSeries();
+        // 컬렉션 변화가 있을 때마다 차트를 업데이트합니다.
+        UpdateCharts();
     }
 
     /// <summary>
@@ -119,7 +118,7 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     private void ProductInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
         // 필요한 경우 특정 속성 변경에 대해서만 업데이트할 수 있습니다.
-        UpdateSeries();
+        UpdateCharts();
     }
 
     #endregion
@@ -127,66 +126,71 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     #region 메서드
 
     /// <summary>
-    /// 로그 데이터를 집계하여 파이 차트 시리즈를 새로 생성합니다.
+    /// 각 제품의 로그 데이터를 집계하여 제품별 파이 차트 시리즈를 새로 생성합니다.
     /// </summary>
-    private void UpdateSeries()
+    private void UpdateCharts()
     {
-        // 로그 레벨별 총 건수를 저장할 딕셔너리
-        var aggregateCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var charts = new List<ProductPieChartViewModel>();
+        
+        // 범주별로 미리 지정한 색상 매핑 (SKColor 사용)
+        var categoryColors = new Dictionary<string, SKColor>
+        {
+            { "Info", new SKColor(30, 144, 255) },    // DodgerBlue
+            { "Warning", new SKColor(255, 165, 0) },    // Orange
+            { "Error", new SKColor(220, 20, 60) },      // Crimson
+            { "Debug", new SKColor(34, 139, 34) }       // ForestGreen
+        };
 
-        // 각 제품별로 DbContext를 생성하고 로그 데이터를 조회
+        // 각 제품별로 로그 데이터를 조회하고 집계
         foreach (var product in _productInfos)
         {
             try
             {
-                // 각 ProductInfo를 통해 데이터베이스 연결
+                // 각 ProductInfo를 통해 데이터베이스에 연결하여 해당 제품의 로그 데이터를 가져옵니다.
                 var logRepository = LogRepositoryFactory.GetRepository(product.DatabaseName, product.ProviderType, product.ConnectionString);
-
-                // Log 엔티티 테이블의 로그 데이터를 조회
                 var logs = logRepository.GetAllLogs();
 
-                // 로그 레벨별로 그룹핑하여 집계
+                // 로그 레벨별로 그룹핑하여 집계합니다.
                 var groups = logs.GroupBy(log => log.LogLevel)
                                  .Select(g => new { LogLevel = g.Key, Count = g.Count() });
 
-                // 집계 결과 누적
+                // 그룹별 집계 결과로 파이 차트 시리즈 생성
+                var seriesList = new List<ISeries>();
                 foreach (var group in groups)
                 {
-                    if (aggregateCounts.ContainsKey(group.LogLevel))
-                        aggregateCounts[group.LogLevel] += group.Count;
-                    else
-                        aggregateCounts[group.LogLevel] = group.Count;
+                    // 색상 매핑 딕셔너리에서 해당 범주의 색상을 가져오거나, 기본 색상을 지정
+                    SKColor fillColor = categoryColors.ContainsKey(group.LogLevel) ? categoryColors[group.LogLevel] : new SKColor(128, 128, 128);
+
+                    var series = new PieSeries<double>
+                    {
+                        Values = new double[] { group.Count },
+                        Name = group.LogLevel,
+                        Fill = new SolidColorPaint(fillColor),
+                        DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Outer,
+                        DataLabelsSize = 15,
+                        DataLabelsPaint = new SolidColorPaint(new SKColor(30, 30, 30)),
+                        DataLabelsFormatter = point => $"{group.LogLevel}: {point.Coordinate.PrimaryValue}",
+                        ToolTipLabelFormatter = point => $"{point.StackedValue.Share:P2}"
+                    };
+
+                    seriesList.Add(series);
                 }
+
+                charts.Add(new ProductPieChartViewModel
+                {
+                    DatabaseName = product.DatabaseName,
+                    Series = seriesList
+                });
             }
             catch (Exception ex)
             {
-                // 실제 애플리케이션에서는 예외 처리 로직(로깅 등)을 추가합니다.
+                // 실제 애플리케이션에서는 예외 로깅 등의 처리를 추가합니다.
                 Console.WriteLine($"Error processing product {product.DatabaseName}: {ex.Message}");
             }
         }
 
-        // 집계된 데이터를 기반으로 파이 차트 시리즈 생성
-        var seriesList = new List<ISeries>();
-
-        foreach (var kvp in aggregateCounts)
-        {
-            // 각 로그 레벨의 건수를 파이 차트 한 슬라이스로 표현
-            var series = new PieSeries<double>
-            {
-                Values = new double[] { kvp.Value }, // 슬라이스의 값 (로그 건수)
-                Name = kvp.Key,                     // 로그 레벨 명칭
-                DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Outer,
-                DataLabelsSize = 15,
-                DataLabelsPaint = new SolidColorPaint(new SKColor(30, 30, 30)),
-                DataLabelsFormatter = point => $"{kvp.Key}: {point.Coordinate.PrimaryValue}",
-                ToolTipLabelFormatter = point => $"{point.StackedValue.Share:P2}"
-            };
-
-            seriesList.Add(series);
-        }
-
-        // Series 프로퍼티 업데이트 (UI 바인딩이 자동 갱신됨)
-        Series = seriesList;
+        // 제품별 파이 차트 컬렉션 업데이트 (UI 바인딩 자동 갱신)
+        Charts = new ObservableCollection<ProductPieChartViewModel>(charts);
     }
 
     /// <summary>
@@ -199,4 +203,20 @@ public class PieChartSummaryViewModel : INotifyPropertyChanged
     }
 
     #endregion
+}
+
+/// <summary>
+/// 각 제품의 데이터베이스 이름과 해당 파이 차트 시리즈 정보를 담는 모델입니다.
+/// </summary>
+public class ProductPieChartViewModel
+{
+    /// <summary>
+    /// 제품의 데이터베이스 이름입니다.
+    /// </summary>
+    public string DatabaseName { get; set; }
+
+    /// <summary>
+    /// 제품의 로그 레벨별 집계 결과를 나타내는 파이 차트 시리즈 컬렉션입니다.
+    /// </summary>
+    public IEnumerable<ISeries> Series { get; set; }
 }
