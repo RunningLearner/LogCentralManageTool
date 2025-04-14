@@ -38,9 +38,9 @@ public class DashBoardViewModel : INotifyPropertyChanged
 
     #region 속성
     /// <summary>
-    /// 대시보드에 표시할 최신 로그 데이터.
+    /// 대시보드에 표시할 로그 데이터 목록 (특정 기간 범위에 해당하는 로그들).
     /// </summary>
-    public ILog SelectedLog { get; set; }
+    public ObservableCollection<ILog> SelectedLogs { get; set; } = new ObservableCollection<ILog>();
 
     /// <summary>
     /// 로그 데이터를 로그 레벨별로 그룹핑하여 생성한 차트의 시리즈 (Bar 형태)입니다.
@@ -78,6 +78,39 @@ public class DashBoardViewModel : INotifyPropertyChanged
     {
         new DateTimeAxis(TimeSpan.FromDays(1), date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
     };
+
+    private DateTime _axisMin;
+    public DateTime AxisMin
+    {
+        get => _axisMin;
+        set
+        {
+            if (_axisMin != value)
+            {
+                _axisMin = value;
+                OnPropertyChanged();
+                // AxisMin이 변경되면 기간 범위에 맞춰 로그 데이터를 업데이트합니다.
+                UpdateSelectedLogsBasedOnRange();
+            }
+        }
+    }
+
+    private DateTime _axisMax;
+    public DateTime AxisMax
+    {
+        get => _axisMax;
+        set
+        {
+            if (_axisMax != value)
+            {
+                _axisMax = value;
+                OnPropertyChanged();
+                // AxisMin이 변경되면 기간 범위에 맞춰 로그 데이터를 업데이트합니다.
+                UpdateSelectedLogsBasedOnRange();
+            }
+        }
+    }
+
     #endregion
 
     #region 커맨드
@@ -102,8 +135,8 @@ public class DashBoardViewModel : INotifyPropertyChanged
             // 전체 로그 데이터를 가져옵니다.
             var logs = _logRepositoty.GetAllLogs();
 
-            // 최신 로그 데이터를 SelectedLog에 할당
-            SelectedLog = logs.OrderByDescending(l => l.Timestamp).FirstOrDefault();
+            // 최신 로그 데이터를 SelectedLogs에 할당
+            UpdateSelectedLogsBasedOnRange();
 
             // 모든 날짜(하루 단위) 목록과 로그 레벨 목록을 추출합니다.
             var distinctDates = logs.Select(l => l.Timestamp.Date)
@@ -166,7 +199,7 @@ public class DashBoardViewModel : INotifyPropertyChanged
         catch (Exception e)
         {
             // 예외 처리: 예외 발생 시 SelectedLog는 null, Series는 빈 배열 등으로 처리
-            SelectedLog = null;
+            SelectedLogs = null;
             Series = Array.Empty<ISeries>();
             // 실제 애플리케이션에서는 로깅 등 예외 처리를 추가합니다.
         }
@@ -180,6 +213,31 @@ public class DashBoardViewModel : INotifyPropertyChanged
     #endregion
 
     #region 메서드
+    /// <summary>
+    /// AxisMin과 AxisMax 범위에 해당하는 로그 데이터를 조회하여 SelectedLogs 컬렉션을 업데이트합니다.
+    /// </summary>
+    private void UpdateSelectedLogsBasedOnRange()
+    {
+        try
+        {
+            // 전체 로그를 가져온 후, 현재 AxisMin과 AxisMax 사이의 로그를 필터링합니다.
+            var logs = _logRepositoty.GetAllLogs();
+            var filteredLogs = logs.Where(l => l.Timestamp >= AxisMin && l.Timestamp <= AxisMax)
+                                   .OrderByDescending(l => l.Timestamp)
+                                   .ToList();
+            SelectedLogs.Clear();
+            foreach (var log in filteredLogs)
+            {
+                SelectedLogs.Add(log);
+            }
+            OnPropertyChanged(nameof(SelectedLogs));
+        }
+        catch (Exception ex)
+        {
+            // 필요에 따라 예외 처리 (예: 로깅)
+        }
+    }
+
     /// <summary>
     /// 로그 레벨(문자열)을 매개변수로 받아, 해당 로그 레벨의 시리즈 표시 여부를 토글합니다.
     /// </summary>
