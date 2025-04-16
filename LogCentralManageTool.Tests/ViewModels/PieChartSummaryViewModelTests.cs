@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LogCentralManageTool.Models;
 using System.ComponentModel;
+using Moq;
 
 namespace LogCentralManageTool.Tests.ViewModels;
 
@@ -43,18 +44,132 @@ public class PieChartSummaryViewModelTests
     }
 
     /// <summary>
-    /// 지정된 InMemory 데이터베이스 이름에 대해, 기존 데이터는 삭제한 후 주어진 로그 레벨의 로그를 지정한 건수만큼 시드합니다.
+    /// 테스트 목적:
+    /// 생성자 호출 시, 전달된 ObservableCollection<ProductInfo> 기반으로 제품별 파이 차트 정보(Charts)가 생성되는지 검증합니다.
+    ///
+    /// 시나리오:
+    /// 1. SetUp에서 두 제품(Product1DB, Product2DB)에 대해 각각 시드 데이터를 추가합니다.
+    /// 2. PieChartSummaryViewModel을 생성하면 내부 UpdateCharts 메서드가 호출되어 각 제품의 집계 결과에 따라 파이 차트 정보가 생성됩니다.
+    /// 3. 결과적으로 두 개의 ProductPieChartViewModel 객체가 Charts 컬렉션에 생성되어야 합니다.
+    /// </summary>
+    [Test]
+    public void Constructor_InitializesCharts_BasedOnProductInfos()
+    {
+        // Act
+        var viewModel = new PieChartSummaryViewModel(_productInfos);
+
+        // Assert
+        Assert.IsNotNull(viewModel.Charts, "생성자 호출 후 Charts는 null이 아니어야 합니다.");
+        Assert.AreEqual(2, viewModel.Charts.Count, "두 개의 제품 정보가 주어졌으므로 Charts 컬렉션에는 2개의 항목이 있어야 합니다.");
+
+        // 각 제품 차트의 시리즈 내용 검증 (더 상세하게)
+        var product1Chart = viewModel.Charts.FirstOrDefault(c => c.DatabaseName == "Product1DB");
+        Assert.IsNotNull(product1Chart, "Product1DB에 대한 차트 정보가 있어야 합니다.");
+        Assert.AreEqual(1, product1Chart.Series.Count(), "Product1DB는 'Info' 로그만 있으므로 시리즈는 1개여야 합니다.");
+        Assert.AreEqual("Info", product1Chart.Series.First().Name, "Product1DB 시리즈의 이름은 'Info'여야 합니다.");
+
+        var product2Chart = viewModel.Charts.FirstOrDefault(c => c.DatabaseName == "Product2DB");
+        Assert.IsNotNull(product2Chart, "Product2DB에 대한 차트 정보가 있어야 합니다.");
+        Assert.AreEqual(1, product2Chart.Series.Count(), "Product2DB는 'Error' 로그만 있으므로 시리즈는 1개여야 합니다.");
+        Assert.AreEqual("Error", product2Chart.Series.First().Name, "Product2DB 시리즈의 이름은 'Error'여야 합니다.");
+    }
+
+    /// <summary>
+    /// 테스트 목적:
+    /// ObservableCollection의 변화가 발생하면 UpdateCharts가 호출되어 Charts가 업데이트되는지 검증합니다.
+    ///
+    /// 시나리오:
+    /// 1. 초기 제품 목록을 사용하여 PieChartSummaryViewModel을 생성합니다.
+    /// 2. 새로운 ProductInfo를 추가한 후, CollectionChanged 이벤트가 발생하여 Charts 컬렉션이 업데이트되는지 확인합니다.
+    /// </summary>
+    [Test]
+    public void CollectionChanged_UpdatesCharts()
+    {
+        // Arrange
+        var viewModel = new PieChartSummaryViewModel(_productInfos);
+        int initialChartCount = viewModel.Charts.Count; // 초기 차트 개수 (제품 개수)
+
+        // Act: 새로운 제품 추가
+        string newDbName = "Product3DB";
+        // Product3DB에 대해 "Warning" 로그 4건 시드
+        SeedInMemoryDatabase(newDbName, "Warning", 4);
+        var newProduct = new ProductInfo { DatabaseName = newDbName, ConnectionString = newDbName, ProviderType = ProviderType.InMemory };
+        _productInfos.Add(newProduct);
+
+        // Assert: 제품 추가 후 Charts 컬렉션이 업데이트되어야 합니다.
+        Assert.AreEqual(initialChartCount + 1, viewModel.Charts.Count, "제품 추가 후 Charts 컬렉션의 개수가 증가해야 합니다.");
+        var newChart = viewModel.Charts.FirstOrDefault(c => c.DatabaseName == newDbName);
+        Assert.IsNotNull(newChart, "새로 추가된 제품에 대한 차트 정보가 Charts 컬렉션에 있어야 합니다.");
+        Assert.AreEqual(1, newChart.Series.Count(), "새 제품은 'Warning' 로그만 있으므로 시리즈는 1개여야 합니다.");
+        Assert.AreEqual("Warning", newChart.Series.First().Name, "새 제품 시리즈의 이름은 'Warning'이어야 합니다.");
+    }
+
+    /// <summary>
+    /// ObservableProductInfo를 사용하여, 제품의 DatabaseName과 ConnectionString이 변경될 때
+    /// PieChartSummaryViewModel의 Charts 속성이 올바르게 업데이트되고, "Charts"에 대한 PropertyChanged 이벤트가 발생하는지 검증합니다.
+    /// 시나리오:
+    /// 1. ObservableProductInfo 인스턴스를 생성(초기값 "Product1DB")하고, InMemory 데이터베이스에 시드 데이터를 추가합니다.
+    /// 2. 이 제품을 ObservableCollection에 담아 PieChartSummaryViewModel을 생성합니다.
+    /// 3. 제품의 DatabaseName과 ConnectionString을 "Product1DB_New"로 변경하고, 새 데이터베이스에 대해 시드 데이터를 추가합니다.
+    /// 4. 이후 ViewModel의 Charts 컬렉션이 업데이트되어, 새 데이터베이스 이름으로 차트가 생성되는지 검증합니다.
+    /// </summary>
+    [Test]
+    public void ProductInfo_PropertyChanged_RaisesChartsPropertyChanged_Simple()
+    {
+        // Arrange: ObservableProductInfo 인스턴스를 생성 및 초기값 설정 (생성자 사용)
+        var product = new ObservableProductInfo("Product1DB", "Product1DB", ProviderType.InMemory);
+
+        // 초기 데이터베이스 시드: "Product1DB"에 "Info" 로그 5건 시드
+        SeedInMemoryDatabase("Product1DB", "Info", 5);
+
+        // ObservableCollection에 제품 추가 후 ViewModel 생성
+        var products = new ObservableCollection<ProductInfo> { product };
+        var viewModel = new PieChartSummaryViewModel(products);
+
+        bool chartsChanged = false;
+        viewModel.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(PieChartSummaryViewModel.Charts))
+            {
+                chartsChanged = true;
+            }
+        };
+
+        // Assert 초기 상태: Charts 컬렉션에 "Product1DB"의 차트가 생성되어 있어야 함
+        Assert.AreEqual(1, viewModel.Charts.Count, "초기 Charts 컬렉션에는 1개의 항목이 있어야 합니다.");
+
+        // Act: 제품의 DatabaseName과 ConnectionString을 변경하고, 새 데이터베이스("Product1DB_New")에 "Error" 로그 7건 시드
+        string newDbName = "Product1DB_New";
+        product.DatabaseName = newDbName;
+        product.ConnectionString = newDbName;
+        SeedInMemoryDatabase(newDbName, "Error", 7);
+
+        // 비동기 업데이트를 고려하여 약간의 지연 처리
+        Thread.Sleep(100);
+
+        // Assert: 제품 정보 변경 후 Charts 컬렉션이 업데이트되어야 하며, 새 데이터베이스 이름에 해당하는 차트가 존재해야 합니다.
+        Assert.IsTrue(chartsChanged, "제품 정보 변경 시 Charts 속성이 변경되었음을 알리는 이벤트가 발생해야 합니다.");
+        Assert.AreEqual(1, viewModel.Charts.Count, "Charts 컬렉션에는 여전히 1개의 항목이 있어야 합니다.");
+        var updatedChart = viewModel.Charts.FirstOrDefault(c => c.DatabaseName == newDbName);
+        Assert.IsNotNull(updatedChart, "새 데이터베이스 이름으로 업데이트된 차트가 있어야 합니다.");
+        Assert.AreEqual(1, updatedChart.Series.Count(), "새 제품은 'Error' 로그만 있으므로 시리즈는 1개여야 합니다.");
+        Assert.AreEqual("Error", updatedChart.Series.First().Name, "시리즈의 이름은 'Error'여야 합니다.");
+    }
+
+    /// <summary>
+    /// 지정된 InMemory 데이터베이스 이름에 대해 기존 데이터를 삭제한 후,
+    /// 주어진 로그 레벨의 로그를 지정한 건수만큼 시드하는 헬퍼 메서드입니다.
     /// </summary>
     /// <param name="dbName">InMemory 데이터베이스 이름</param>
-    /// <param name="logLevel">로그 레벨</param>
-    /// <param name="count">추가할 로그 건수</param>
+    /// <param name="logLevel">로그 레벨(예: "Info", "Error", "Warning")</param>
+    /// <param name="count">시드할 로그 건수</param>
     private void SeedInMemoryDatabase(string dbName, string logLevel, int count)
     {
         var options = new DbContextOptionsBuilder<MySQLLoggingDbContext>()
             .UseInMemoryDatabase(databaseName: dbName)
             .Options;
 
-        // 기존 데이터 삭제 처리: EnsureDeleted 호출
+        // 기존 데이터 삭제
         using (var context = new MySQLLoggingDbContext(options))
         {
             context.Database.EnsureDeleted();
@@ -69,120 +184,48 @@ public class PieChartSummaryViewModelTests
                 {
                     Id = (i + 1).ToString(),
                     Timestamp = DateTime.Now.AddMinutes(-i),
-                    Message = $"{logLevel} log {i + 1}",
                     LogLevel = logLevel,
-                    StackTrace = ""
+                    Message = $"{logLevel} log {i + 1}",
+                    StackTrace = string.Empty
                 });
             }
             context.SaveChanges();
         }
     }
-
-    /// <summary>
-    /// 테스트 목적:
-    /// 생성자 호출 시, 전달된 ObservableCollection&lt;ProductInfo&gt; 기반으로 파이 차트 시리즈(Series)가 생성되는지 검증합니다.
-    /// 
-    /// 시나리오:
-    /// 1. SetUp에서 두 제품(Product1DB, Product2DB)에 대해 각각 시드 데이터를 추가합니다.
-    /// 2. PieChartSummaryViewModel을 생성하면 내부 UpdateSeries 메서드가 호출되어 집계 결과에 따라 파이 시리즈가 생성됩니다.
-    /// 3. 집계 결과로 두 개의 로그 레벨("Info", "Error")에 해당하는 시리즈가 생성되어야 합니다.
-    /// </summary>
-    [Test]
-    public void Constructor_InitializesSeries_BasedOnProductInfos()
-    {
-        // Act
-        var viewModel = new PieChartSummaryViewModel(_productInfos);
-
-        // Assert
-        Assert.IsNotNull(viewModel.Series, "생성자 호출 후 Series는 null이 아니어야 합니다.");
-
-        // 위 SetUp에 따르면, Product1DB의 "Info" 로그와 Product2DB의 "Error" 로그가 있으므로,
-        // 집계 결과로 2개의 파이 슬라이스가 생성되어야 합니다.
-        int seriesCount = viewModel.Series.Count();
-        Assert.AreEqual(2, seriesCount, "집계 결과, 두 개의 로그 레벨('Info'와 'Error')에 해당하는 시리즈가 생성되어야 합니다.");
-    }
-
-    /// <summary>
-    /// 테스트 목적:
-    /// ObservableCollection의 변화가 발생하면 UpdateSeries가 호출되어 Series가 업데이트되는지 검증합니다.
-    /// 
-    /// 시나리오:
-    /// 1. 초기 제품 목록을 사용하여 PieChartSummaryViewModel을 생성합니다.
-    /// 2. 새로운 ProductInfo를 추가한 후, CollectionChanged 이벤트가 발생하여 시리즈가 다시 업데이트되는지 확인합니다.
-    /// </summary>
-    [Test]
-    public void CollectionChanged_UpdatesSeries()
-    {
-        // Arrange
-        var viewModel = new PieChartSummaryViewModel(_productInfos);
-        int initialSeriesCount = viewModel.Series.Count();
-
-        // Act: 새로운 제품 추가
-        string newDbName = "Product3DB";
-        // Product3DB에 대해 "Warning" 로그 4건 시드
-        SeedInMemoryDatabase(newDbName, "Warning", 4);
-        var newProduct = new ProductInfo { DatabaseName = newDbName, ConnectionString = newDbName, ProviderType = ProviderType.InMemory };
-        _productInfos.Add(newProduct);
-
-        // Assert: 제품 추가 후 Series 집계가 업데이트되어야 합니다.
-        int updatedSeriesCount = viewModel.Series.Count();
-        // 기존 두 제품에서 "Info"와 "Error" 시리즈가 있었고, 새 제품은 "Warning" 시리즈를 추가하므로 총 3개가 되어야 함
-        Assert.AreEqual(3, updatedSeriesCount, "제품 추가 후, 세 개의 로그 레벨이 집계되어야 합니다.");
-    }
-
-    /// <summary>
-    /// 테스트 목적:
-    /// 개별 ProductInfo 항목의 속성 변경이 발생하면, 해당 항목의 PropertyChanged 이벤트를 통해 UpdateSeries가 호출되어 
-    /// Series가 재계산되는지 검증합니다.
-    /// 
-    /// 시나리오:
-    /// 1. 초기 제품 목록(ObservableProductInfo)을 사용하여 PieChartSummaryViewModel을 생성합니다.
-    /// 2. 기존 제품 중 하나의 DatabaseName과 ConnectionString을 동시에 변경하여, 새로운 InMemory 데이터베이스를 사용하도록 합니다.
-    /// 3. 새 데이터베이스에 대해 시드 데이터를 추가하고, 변경 후 PropertyChanged 이벤트가 발생하여 UpdateSeries가 호출되는지 확인합니다.
-    /// 4. Series 속성에 변경(즉, PropertyChanged 이벤트 "Series"가 발생)이 되었음을 검증합니다.
-    /// </summary>
-    [Test]
-    public void ProductInfo_PropertyChanged_RaisesSeriesPropertyChanged()
-    {
-        // Arrange
-        var observableProduct = new ObservableProductInfo
-        {
-            DatabaseName = "Product1DB",
-            ConnectionString = "Product1DB",
-            ProviderType = ProviderType.InMemory
-        };
-        var productList = new ObservableCollection<ProductInfo> { observableProduct };
-
-        // 초기 InMemory 데이터베이스 시드
-        SeedInMemoryDatabase("Product1DB", "Info", 5);
-
-        var viewModel = new PieChartSummaryViewModel(productList);
-        bool seriesChanged = false;
-        viewModel.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == "Series")
-                seriesChanged = true;
-        };
-
-        // Act: 제품의 DatabaseName과 ConnectionString을 동시에 변경하여 새로운 InMemory DB 사용
-        observableProduct.DatabaseName = "Product1DB_New";
-        observableProduct.ConnectionString = "Product1DB_New";
-        // 새 데이터베이스에 대해 시드 데이터를 추가 (예: "Info" 로그 7건)
-        SeedInMemoryDatabase("Product1DB_New", "Info", 7);
-
-        // Assert: PropertyChanged 이벤트가 "Series"에 대해 발생해야 함
-        Assert.IsTrue(seriesChanged, "제품 정보 변경 시, Series 속성의 PropertyChanged 이벤트가 발생해야 합니다.");
-    }
 }
 
 /// <summary>
 /// 테스트용으로 INotifyPropertyChanged를 구현한 ProductInfo 파생 클래스입니다.
+/// 이 클래스는 제품의 속성이 변경될 때 PropertyChanged 이벤트를 발생시켜,
+/// ViewModel이 해당 변경을 감지할 수 있도록 합니다.
 /// </summary>
 public class ObservableProductInfo : ProductInfo, INotifyPropertyChanged
 {
-    public event PropertyChangedEventHandler PropertyChanged;
-    private string _connectionString;
+    // 기본값을 빈 문자열로 할당하여 null 문제를 방지합니다.
+    private string _connectionString = string.Empty;
+    private string _databaseName = string.Empty;
 
+    /// <summary>
+    /// 기본 생성자: 기본값은 빈 문자열로 설정됩니다.
+    /// </summary>
+    public ObservableProductInfo() { }
+
+    /// <summary>
+    /// 초기 DatabaseName, ConnectionString, ProviderType을 설정하는 생성자입니다.
+    /// </summary>
+    /// <param name="databaseName">초기 데이터베이스 이름</param>
+    /// <param name="connectionString">초기 커넥션 문자열</param>
+    /// <param name="providerType">데이터 공급자 타입</param>
+    public ObservableProductInfo(string databaseName, string connectionString, ProviderType providerType)
+    {
+        _databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
+        _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        ProviderType = providerType;
+    }
+
+    /// <summary>
+    /// ConnectionString 속성. 값 변경 시 PropertyChanged 이벤트가 발생합니다.
+    /// </summary>
     public new string ConnectionString
     {
         get => _connectionString;
@@ -195,4 +238,25 @@ public class ObservableProductInfo : ProductInfo, INotifyPropertyChanged
             }
         }
     }
+
+    /// <summary>
+    /// DatabaseName 속성. 값 변경 시 PropertyChanged 이벤트가 발생합니다.
+    /// </summary>
+    public new string DatabaseName
+    {
+        get => _databaseName;
+        set
+        {
+            if (_databaseName != value)
+            {
+                _databaseName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DatabaseName)));
+            }
+        }
+    }
+
+    /// <summary>
+    /// INotifyPropertyChanged 이벤트.
+    /// </summary>
+    public event PropertyChangedEventHandler PropertyChanged;
 }

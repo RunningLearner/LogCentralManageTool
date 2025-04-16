@@ -138,25 +138,21 @@ public class DashBoardViewModel : INotifyPropertyChanged
             // 최신 로그 데이터를 SelectedLogs에 할당
             UpdateSelectedLogsBasedOnRange();
 
-            // 모든 날짜(하루 단위) 목록과 로그 레벨 목록을 추출합니다.
+            // 모든 날짜(하루 단위) 목록을 추출합니다.
             var distinctDates = logs.Select(l => l.Timestamp.Date)
                                     .Distinct()
                                     .OrderBy(d => d)
                                     .ToList();
 
-            var distinctLevels = logs.Select(l => l.LogLevel)
-                                     .Distinct()
-                                     .OrderBy(l => l)
-                                     .ToList();
-
+            // 항상 세 가지 로그 레벨에 대한 시리즈를 생성
+            var logLevels = new[] { "Info", "Warning", "Error" };
             var seriesList = new List<ISeries>();
 
-            // 로그 레벨별로 각 시리즈 생성 시 오프셋 값을 조정 (하루 내에서 30분씩 차이)
-            foreach (var level in distinctLevels)
+            foreach (var level in logLevels)
             {
                 var points = new List<DateTimePoint>();
 
-                // 각 로그 레벨에 따라 오프셋(시간 단위)을 아주 작게 지정합니다.
+                // 각 로그 레벨에 따라 오프셋(시간 단위)을 지정합니다.
                 double offsetHours = 0;
                 if (level.Equals("Warning", StringComparison.OrdinalIgnoreCase))
                     offsetHours = -3;    
@@ -170,8 +166,6 @@ public class DashBoardViewModel : INotifyPropertyChanged
                         l.Timestamp.Date == date &&
                         string.Equals(l.LogLevel, level, StringComparison.OrdinalIgnoreCase));
 
-                    // 날짜에 오프셋(0.5시간)을 적용하여 DateTimePoint 생성.
-                    // X값은 DateTime.Ticks 값이어야 하므로, date.AddHours(offsetHours).Ticks를 사용합니다.
                     var pointDate = date.AddHours(offsetHours);
                     points.Add(new DateTimePoint(pointDate, count));
                 }
@@ -189,8 +183,7 @@ public class DashBoardViewModel : INotifyPropertyChanged
                 {
                     Name = level,
                     Values = new ObservableCollection<DateTimePoint>(points),
-                    Fill = new SolidColorPaint(fillColor),
-                    // 여기서 DataPadding, MaxColumnWidth 등 추가 옵션을 조정해도 좋습니다.
+                    Fill = new SolidColorPaint(fillColor)
                 });
             }
 
